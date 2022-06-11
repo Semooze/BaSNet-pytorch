@@ -34,14 +34,14 @@ if __name__ == "__main__":
             shuffle=False, num_workers=config.num_workers,
             worker_init_fn=worker_init_fn)
 
-    test_info = {"step": [], "test_acc": [], "average_mAP": [],
-                "mAP@0.1": [], "mAP@0.2": [], "mAP@0.3": [],
-                "mAP@0.4": [], "mAP@0.5": [], "mAP@0.6": [],
-                "mAP@0.7": [], "mAP@0.8": [], "mAP@0.9": []}
-    
+    test_info = {"step": [], "test_acc": [],
+                "average_mAP[0.1:0.7]": [], "average_mAP[0.1:0.5]": [], "average_mAP[0.3:0.7]": [],
+                "mAP@0.1": [], "mAP@0.2": [], "mAP@0.3": [], "mAP@0.4": [],
+                "mAP@0.5": [], "mAP@0.6": [], "mAP@0.7": []}
+
     logger = Logger(config.log_path)
-        
+
     test(net, config, logger, test_loader, test_info, 0, model_file=config.model_file)
 
-    utils.save_best_record_thumos(test_info, 
+    utils.save_best_record_thumos(test_info,
         os.path.join(config.output_path, "best_record.txt"))

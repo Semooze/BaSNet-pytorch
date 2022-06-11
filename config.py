@@ -27,6 +27,10 @@ class Config(object):
         self.feature_fps = 25
         self.num_segments = 750
 
+    def __str__(self):
+        attrs = vars(self)
+        attr_lst = sorted(attrs.keys())
+        return '\n'.join("- %s: %s" % (item, attrs[item]) for item in attr_lst if item != 'lr')
 
 class_dict = {0: 'BaseballPitch',
                 1: 'BasketballDunk',

@@ -23,7 +23,7 @@ def test(net, config, logger, test_loader, test_info, step, model_file=None):
         num_total = 0.
 
         load_iter = iter(test_loader)
-        
+
         for i in range(len(test_loader.dataset)):
 
             _data, _label, _, vid_name, vid_num_seg = next(load_iter)
@@ -43,7 +43,7 @@ def test(net, config, logger, test_loader, test_info, step, model_file=None):
 
             num_correct += np.sum((correct_pred == config.num_classes).astype(np.float32))
             num_total += correct_pred.shape[0]
-            
+
             cas_base = utils.minmax_norm(cas_base)
             cas_supp = utils.minmax_norm(cas_supp)
 
@@ -54,7 +54,7 @@ def test(net, config, logger, test_loader, test_info, step, model_file=None):
                 cas_pred = np.reshape(cas_pred, (config.num_segments, -1, 1))
 
                 cas_pred = utils.upgrade_resolution(cas_pred, config.scale)
-                
+
                 proposal_dict = {}
 
                 for i in range(len(config.act_thresh)):
@@ -92,22 +92,27 @@ def test(net, config, logger, test_loader, test_info, step, model_file=None):
             json.dump(final_res, f)
             f.close()
 
-        tIoU_thresh = np.linspace(0.1, 0.9, 9)
+        tIoU_thresh = np.linspace(0.1, 0.7, 7)
         anet_detection = ANETdetection(config.gt_path, json_path,
                                    subset='test', tiou_thresholds=tIoU_thresh,
                                    verbose=False, check_status=False)
-        mAP, average_mAP = anet_detection.evaluate()
+        mAP, _ = anet_detection.evaluate()
 
         logger.log_value('Test accuracy', test_acc, step)
 
         for i in range(tIoU_thresh.shape[0]):
             logger.log_value('mAP@{:.1f}'.format(tIoU_thresh[i]), mAP[i], step)
 
-        logger.log_value('Average mAP', average_mAP, step)
+        logger.log_value('acc/Average mAP[0.1:0.7]', mAP[:7].mean(), step)
+        logger.log_value('acc/Average mAP[0.1:0.5]', mAP[:5].mean(), step)
+        logger.log_value('acc/Average mAP[0.3:0.7]', mAP[2:7].mean(), step)
 
         test_info["step"].append(step)
         test_info["test_acc"].append(test_acc)
-        test_info["average_mAP"].append(average_mAP)
+        test_info["average_mAP[0.1:0.7]"].append(mAP[:7].mean())
+        test_info["average_mAP[0.1:0.5]"].append(mAP[:5].mean())
+        test_info["average_mAP[0.3:0.7]"].append(mAP[2:7].mean())
+
 
         for i in range(tIoU_thresh.shape[0]):
             test_info["mAP@{:.1f}".format(tIoU_thresh[i])].append(mAP[i])

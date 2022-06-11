@@ -29,10 +29,10 @@ You can set up the environments by using `$ pip3 install -r requirements.txt`.
 2. Extract features with two-stream I3D networks
     - We recommend extracting features using [this repo](https://github.com/piergiaj/pytorch-i3d).
     - For convenience, we provide the features we used. You can find them [here](https://drive.google.com/file/d/1NqaDRo782bGZKo662I0rI_cvpDT67VQU/view?usp=sharing).
-    
+
 3. Place the features inside the `dataset` folder.
     - Please ensure the data structure is as below.
-   
+
 ~~~~
 ├── dataset
    └── THUMOS14
@@ -100,3 +100,13 @@ If you find this code useful, please cite our paper.
 
 ## Contact
 If you have any question or comment, please contact the first author of the paper - Pilhyeon Lee (lph1114@yonsei.ac.kr).
+
+
+```bash
+pip install joblib==0.13.0 numpy==1.17.0 pandas==0.23.4 scikit-learn==0.20.0 scipy==1.1.0 tensorboard==1.15.0 tensorboard-logger==0.1.0 tensorflow==1.15.4 tensorflow-estimator==1.15.1 tqdm==4.31.1
+```
+
+```bash
+set CUDA_VISIBLE_DEVICES=0
+python -W ignore ./main.py --model_path ./models/BaSNet_6 --output_path ./outputs/BaSNet_6 --log_path ./logs/BaSNet_6 --seed -1 --modal rgb
+```

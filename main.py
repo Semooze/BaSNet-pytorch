@@ -18,10 +18,12 @@ if __name__ == "__main__":
 
     config = Config(args)
     worker_init_fn = None
-   
+
     if config.seed >= 0:
         utils.set_seed(config.seed)
         worker_init_fn = np.random.seed(config.seed)
+
+    utils.save_config(config, os.path.join(config.output_path, "config.txt"))
 
     net = BaS_Net(config.len_feature, config.num_classes, config.num_segments)
     net = net.cuda()
@@ -44,11 +46,11 @@ if __name__ == "__main__":
             shuffle=False, num_workers=config.num_workers,
             worker_init_fn=worker_init_fn)
 
-    test_info = {"step": [], "test_acc": [], "average_mAP": [],
-                "mAP@0.1": [], "mAP@0.2": [], "mAP@0.3": [],
-                "mAP@0.4": [], "mAP@0.5": [], "mAP@0.6": [],
-                "mAP@0.7": [], "mAP@0.8": [], "mAP@0.9": []}
-    
+    test_info = {"step": [], "test_acc": [],
+                "average_mAP[0.1:0.7]": [], "average_mAP[0.1:0.5]": [], "average_mAP[0.3:0.7]": [],
+                "mAP@0.1": [], "mAP@0.2": [], "mAP@0.3": [], "mAP@0.4": [],
+                "mAP@0.5": [], "mAP@0.6": [], "mAP@0.7": []}
+
     best_mAP = -1
 
     criterion = BaS_Net_loss(config.alpha)
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         betas=(0.9, 0.999), weight_decay=0.0005)
 
     logger = Logger(config.log_path)
-    
+
     loader_iter = iter(train_loader)
 
     for step in tqdm(
@@ -70,15 +72,16 @@ if __name__ == "__main__":
                 param_group["lr"] = config.lr[step - 1]
 
         train(net, train_loader, loader_iter, optimizer, criterion, logger, step)
-        
-        test(net, config, logger, test_loader, test_info, step)
 
-        if test_info["average_mAP"][-1] > best_mAP:
-            best_mAP = test_info["average_mAP"][-1]
+        if step % 100 == 0:
+            test(net, config, logger, test_loader, test_info, step)
 
-            utils.save_best_record_thumos(test_info, 
-                os.path.join(config.output_path, "best_record_seed_{}.txt".format(config.seed)))
+            if test_info["average_mAP[0.1:0.7]"][-1] > best_mAP:
+                best_mAP = test_info["average_mAP[0.1:0.7]"][-1]
 
-            torch.save(net.state_dict(), os.path.join(args.model_path, \
-                "BaS_Net_model_seed_{}.pkl".format(config.seed)))
+                utils.save_best_record_thumos(test_info,
+                    os.path.join(config.output_path, "best_record_seed_{}.txt".format(config.seed)))
+
+                torch.save(net.state_dict(), os.path.join(args.model_path, \
+                    "BaS_Net_model_seed_{}.pkl".format(config.seed)))
 

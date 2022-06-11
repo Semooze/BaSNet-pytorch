@@ -32,7 +32,7 @@ def get_proposal_oic(tList, wtcam, final_score, c_pred, scale, v_len, sampling_f
                 outer_e = min(int(wtcam.shape[0] - 1), int(grouped_temp_list[j][-1] + lambda_ * len_proposal))
 
                 outer_temp_list = list(range(outer_s, int(grouped_temp_list[j][0]))) + list(range(int(grouped_temp_list[j][-1] + 1), outer_e + 1))
-                
+
                 if len(outer_temp_list) == 0:
                     outer_score = 0
                 else:
@@ -59,19 +59,25 @@ def result2json(result):
 def grouping(arr):
     return np.split(arr, np.where(np.diff(arr) != 1)[0] + 1)
 
+def save_config(config, file_path):
+    fo = open(file_path, "w")
+    fo.write("Configurtaions:\n")
+    fo.write(str(config))
+    fo.close()
 
 def save_best_record_thumos(test_info, file_path):
     fo = open(file_path, "w")
     fo.write("Step: {}\n".format(test_info["step"][-1]))
-    fo.write("Test_acc: {:.2f}\n".format(test_info["test_acc"][-1]))
-    fo.write("average_mAP: {:.4f}\n".format(test_info["average_mAP"][-1]))
-    
-    tIoU_thresh = np.linspace(0.1, 0.9, 9)
+    fo.write("Test_acc: {:.4f}\n".format(test_info["test_acc"][-1]))
+    fo.write("average_mAP[0.1:0.7]: {:.4f}\n".format(test_info["average_mAP[0.1:0.7]"][-1]))
+    fo.write("average_mAP[0.1:0.5]: {:.4f}\n".format(test_info["average_mAP[0.1:0.5]"][-1]))
+    fo.write("average_mAP[0.3:0.7]: {:.4f}\n".format(test_info["average_mAP[0.3:0.7]"][-1]))
+
+    tIoU_thresh = np.linspace(0.1, 0.7, 7)
     for i in range(len(tIoU_thresh)):
         fo.write("mAP@{:.1f}: {:.4f}\n".format(tIoU_thresh[i], test_info["mAP@{:.1f}".format(tIoU_thresh[i])][-1]))
 
     fo.close()
-  
 
 def minmax_norm(act_map):
     max_val = nn.ReLU()(torch.max(act_map, dim=1)[0])
